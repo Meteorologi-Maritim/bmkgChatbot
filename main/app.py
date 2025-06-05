@@ -43,7 +43,8 @@ def chat():
             sources = []
         elif source == '4':  # PDF/vector chat
             chat_history = [HumanMessage(content=user_input)]
-            doc_result = doc_conversation({'input': user_input, 'chat_history': chat_history})
+            # doc_result = doc_conversation({'input': user_input, 'chat_history': chat_history})
+            doc_result = doc_conversation.invoke({'input': user_input, 'chat_history': chat_history})
             answer = doc_result['answer']
             sources = [{"source": doc.metadata.get('source'), "page": doc.metadata.get('page')} for doc in doc_result.get('context', [])]
         elif source == '5':  # Combination
