@@ -37,3 +37,11 @@ def global_run():
         history.append({"role": "assistant", "content": response})
         
         print(f"Assistant: {response}")
+        
+def global_ask(user_input):
+    openai_api_key = g_load_environment_variables()
+    history = [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": user_input}
+    ]
+    return global_chat(history, openai_api_key)

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BMKG Chatbot</title>
+    <style>
+        /* Reset dan basic style */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f9fc;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            padding: 25px 30px;
+            box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #0275d8;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+            color: #444;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1.8px solid #ddd;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #0275d8;
+            box-shadow: 0 0 6px #a6c8ff;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #0275d8;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #025aa5;
+        }
+
+        h3 {
+            color: #555;
+            margin-top: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        #response {
+            min-height: 60px;
+            background: #e9f0fb;
+            border-radius: 5px;
+            padding: 15px;
+            white-space: pre-wrap;
+            font-size: 16px;
+            color: #222;
+        }
+
+        #sources {
+            background: #f0f4f9;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            color: #555;
+            min-height: 40px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>BMKG Chatbot</h1>
+
+        <label for="source">Pilih sumber jawaban:</label>
+        <select id="source">
+            <option value="1">Pengetahuan Umum</option>
+            <option value="2">CSV File</option>
+            <option value="3">Database</option>
+            <option value="4">Vectorized PDF</option>
+            <option value="5">Combination of Answer Sources</option>
+        </select>
+
+        <label for="userInput">Tulis pertanyaan:</label>
+        <input type="text" id="userInput" placeholder="Tulis pertanyaan..." />
+
+        <button onclick="sendChat()">Kirim</button>
+
+        <h3>Jawaban:</h3>
+        <div id="response">...</div>
+
+        <h3>Sumber (jika ada):</h3>
+        <pre id="sources">-</pre>
+    </div>
+
+    <script>
+        async function sendChat() {
+            const input = document.getElementById('userInput').value.trim();
+            const source = document.getElementById('source').value;
+            if (!input) return alert('Masukkan pertanyaan!');
+
+            document.getElementById('response').innerText = 'Memproses...';
+            document.getElementById('sources').innerText = '-';
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ input, source })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(data.error);
+                    document.getElementById('response').innerText = '';
+                    document.getElementById('sources').innerText = '-';
+                    return;
+                }
+
+                document.getElementById('response').innerText = data.response;
+
+                if (data.sources && data.sources.length > 0) {
+                    let srcText = '';
+                    data.sources.forEach((s, i) => {
+                        srcText += `${i + 1}. ${s.source}, halaman ${s.page}\n`;
+                    });
+                    document.getElementById('sources').innerText = srcText;
+                } else {
+                    document.getElementById('sources').innerText = 'Tidak ada sumber tambahan.';
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan koneksi atau server.');
+                document.getElementById('response').innerText = '';
+                document.getElementById('sources').innerText = '-';
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,29 +1,29 @@
+# from langchain.agents import create_csv_agent
 from langchain_experimental.agents import create_csv_agent
-from langchain_openai import ChatOpenAI, OpenAI
-from langchain.agents.agent_types import AgentType
+# from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from dotenv import load_dotenv
 import os
 
 def load_environment_variables():
     load_dotenv(override=True)
-    openai_api_key = os.getenv("OPEN_API_KEY")
+    openai_api_key = os.getenv("OPEN_API_KEY")  # Pastikan di .env kamu ada OPEN_API_KEY (bukan OPEN_API_KEY)
     return openai_api_key
 
 def create_agent(openai_api_key, source):
     return create_csv_agent(
-        ChatOpenAI(temperature=0, 
-                   model="gpt-4o-mini",
-                   openai_api_key=openai_api_key),
+        ChatOpenAI(
+            temperature=0,
+            model_name="gpt-4o-mini",
+            openai_api_key=openai_api_key
+        ),
         source,
-        verbose=False,
-        agent_type=AgentType.OPENAI_FUNCTIONS,
-        allow_dangerous_code=True
+        verbose=False
     )
     
 def prompt_template(user_input):
     prompt = (
         user_input +
-        
         """
         Berdasarkan pertanyaan diatas, coba jawab pertanyaannya dengan aturan sebagai berikut!
         
@@ -96,21 +96,17 @@ def prompt_template(user_input):
 def user_interaction(agent):
     print("Chatbot is running. Type 'exit', 'quit', or 'q' to stop.")
     while True:
-        
         user_input = input("You: ")
-        
         if user_input.lower() in ["exit", "quit", "q"]:
             print("Chatbot has stopped.")
             break
         prompt = prompt_template(user_input)
-        result = agent.invoke(prompt)
-        
-        print(f"Assistant: {result['output']}")
-        
+        result = agent.run(prompt)
+        print(f"Assistant: {result}")
+
 def csv_run():
     openai_api_key = load_environment_variables()
     
-    # Mengambil input sumber dari pengguna
     source = []
     while True:
         user_input = input("Masukkan URL atau path CSV (atau ketik 'selesai' untuk melanjutkan): ")
@@ -118,7 +114,6 @@ def csv_run():
             break
         source.append(user_input)
     
-    # Jika tidak ada input sumber yang diberikan
     if not source:
         print("Tidak ada sumber CSV yang diberikan. Keluar dari program.")
         return
@@ -126,6 +121,5 @@ def csv_run():
     if len(source) == 1:
         source = source[0]
     
-    # Membuat agen dengan input sumber yang diberikan
     agent = create_agent(openai_api_key, source)
     user_interaction(agent)
