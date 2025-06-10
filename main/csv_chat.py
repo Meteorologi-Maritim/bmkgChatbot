@@ -7,7 +7,7 @@ import os
 
 def load_environment_variables():
     load_dotenv(override=True)
-    openai_api_key = os.getenv("OPEN_API_KEY")  # Pastikan di .env kamu ada OPEN_API_KEY (bukan OPEN_API_KEY)
+    openai_api_key = os.getenv("OPEN_API_KEY")
     return openai_api_key
 
 def create_agent(openai_api_key, source):
@@ -18,7 +18,9 @@ def create_agent(openai_api_key, source):
             openai_api_key=openai_api_key
         ),
         source,
-        verbose=False
+        agent_type="openai-tools",
+        verbose=True,
+        allow_dangerous_code=True
     )
     
 def prompt_template(user_input):
