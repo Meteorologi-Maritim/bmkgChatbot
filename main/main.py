@@ -8,10 +8,10 @@ def main():
     print("Selamat datang di aplikasi chatbot!")
     print("Pilih sumber jawaban yang ingin Anda gunakan:")
     print("1. Pengetahuan Umum")
-    print("2. CSV File")
-    print("3. Database")
+    print("2. CSV File (under maintenance)")
+    print("3. Database (under maintenance)")
     print("4. Vectorized PDF")
-    print("5. Combination of Answer Sources")
+    print("5. Combination of Answer Sources (under maintenance)")
     
     choice = input("Masukkan pilihan Anda (1/2/3/4/5): ")
     
