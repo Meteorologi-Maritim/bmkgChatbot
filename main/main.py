@@ -9,7 +9,7 @@ def main():
     print("Pilih sumber jawaban yang ingin Anda gunakan:")
     print("1. Pengetahuan Umum")
     print("2. CSV File (local file)")
-    print("3. Database (under maintenance)")
+    print("3. Database (mysql)")
     print("4. Vectorized PDF")
     print("5. Combination of Answer Sources (under maintenance)")
     
