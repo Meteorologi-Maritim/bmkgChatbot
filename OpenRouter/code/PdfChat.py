@@ -68,8 +68,8 @@ def chat_with_openrouter(chat_history):
         return "[Gagal mendapatkan respons dari model]"
 
 # === Interaksi Chat ===
-def start_chat():
-    print("Chatbot dokumen aktif. Ketik 'exit' untuk keluar.\n")
+def pdf_run():
+    print("Chatbot dokumen aktif. Ketik 'exit/quit' untuk keluar.\n")
     
     # Mulai dengan mengirim file ke model
     print("🤖 Assistant sedang memproses dokumen awal...")
@@ -100,6 +100,6 @@ def start_chat():
             "content": assistant_reply
         })
 
-# === Jalankan program ===
-if __name__ == "__main__":
-    start_chat()
+# # === Jalankan program ===
+# if __name__ == "__main__":
+#     start_chat()
