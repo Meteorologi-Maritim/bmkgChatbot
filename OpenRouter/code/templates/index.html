@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatbot BMKG</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* === PALET WARNA & VARIABEL DASAR === */
+        :root {
+            --primary-blue: #0077BE;
+            --secondary-blue: #005A9E;
+            --light-blue-bg: #f0f8ff;
+            --white-bg: #FFFFFF;
+            --light-gray-bg: #f8f9fa;
+            --bot-msg-bg: #e9ecef;
+            --text-dark: #333333;
+            --text-light: #FFFFFF;
+            --text-secondary: #5c677d;
+            --border-color: #dee2e6;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --accent-gradient: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.07);
+            --shadow-strong: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        /* === PENGATURAN DASAR BODY === */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: linear-gradient(135deg, var(--light-blue-bg), #d6eaff);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            color: var(--text-dark);
+        }
+
+        .hidden { display: none !important; }
+        
+        /* === BAGIAN HOME SCREEN === */
+        #home-screen {
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center;
+            align-items: center; 
+            text-align: center; 
+            width: 100%; 
+            max-width: 550px;
+        }
+        .home-robot {
+            width: 100px; 
+            height: 100px; 
+            margin-bottom: 30px; 
+            object-fit: contain;
+            border-radius: 50%;
+            background: var(--white-bg);
+            padding: 10px;
+            box-shadow: var(--shadow-light);
+        }
+        #home-screen h1 {
+            font-size: 2.5rem; 
+            font-weight: 700; 
+            color: #1a3a53; 
+            margin: 0 0 15px 0;
+        }
+        #home-screen p {
+            font-size: 1.1rem; 
+            color: var(--text-secondary); 
+            max-width: 80%;
+            margin-bottom: 40px; 
+            line-height: 1.6;
+        }
+        .start-chat-btn {
+            background: var(--accent-gradient); 
+            border: none; 
+            color: white;
+            padding: 18px 40px; 
+            border-radius: 50px; 
+            font-size: 1.1rem;
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(0, 119, 190, 0.3);
+        }
+        .start-chat-btn:hover {
+            transform: translateY(-4px); 
+            box-shadow: 0 8px 25px rgba(0, 119, 190, 0.4);
+        }
+
+        /* === BAGIAN CHATBOT UTAMA === */
+        #chatbot-screen {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 100%;
+            height: 90vh;
+            max-height: 750px;
+            background-color: var(--white-bg);
+            display: flex;
+            flex-direction: column;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-strong);
+            overflow: hidden;
+        }
+
+        /* === HEADER CHAT === */
+        .chat-header {
+            background: var(--accent-gradient);
+            color: var(--text-light);
+            padding: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 119, 190, 0.3);
+            z-index: 10;
+        }
+        .chat-header .icon { width: 28px; height: 28px; }
+
+        /* === DROPDOWN PEMILIH MODE === */
+        .select-wrapper {
+            padding: 15px 20px;
+            background-color: var(--white-bg);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        .select-wrapper select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-gray-bg);
+            color: var(--text-dark);
+            appearance: none; -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23333' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px;
+        }
+        .select-wrapper select:focus { outline: none; border-color: var(--primary-blue); }
+
+        /* === AREA PESAN CHAT === */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: var(--light-gray-bg);
+        }
+        .chat-messages::-webkit-scrollbar { width: 8px; }
+        .chat-messages::-webkit-scrollbar-track { background: #f1f1f1; }
+        .chat-messages::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        .chat-messages::-webkit-scrollbar-thumb:hover { background: #aaa; }
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            margin-bottom: 12px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.5;
+            clear: both;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn 0.4s forwards;
+            word-wrap: break-word;
+        }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        .user-message {
+            background: var(--primary-blue);
+            color: var(--text-light);
+            float: right;
+            border-bottom-right-radius: 4px;
+        }
+        .bot-message {
+            background-color: var(--bot-msg-bg);
+            color: var(--text-dark);
+            float: left;
+            border-bottom-left-radius: 4px;
+        }
+        .typing-indicator { display: flex; align-items: center; gap: 5px; }
+        .typing-indicator span {
+            height: 8px; width: 8px; background-color: #999; border-radius: 50%; display: inline-block;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+
+        /* === AREA INPUT CHAT === */
+        .chat-input {
+            display: flex;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding: 15px 20px;
+            background-color: var(--white-bg);
+            flex-shrink: 0;
+            gap: 10px;
+        }
+        .chat-input-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s, transform 0.2s, border-color 0.3s;
+            flex-shrink: 0;
+        }
+        .chat-input-btn:hover {
+            background-color: #f1f1f1;
+            border-color: #bbb;
+            transform: scale(1.05);
+        }
+        .chat-input-btn.send-btn {
+            background: var(--primary-blue);
+            border: none;
+        }
+        .chat-input-btn.send-btn:hover {
+            background-color: var(--secondary-blue);
+            transform: scale(1.1);
+        }
+        .chat-input-btn svg {
+            width: 24px; height: 24px;
+            fill: var(--text-secondary);
+        }
+        .chat-input-btn.send-btn svg {
+            fill: var(--text-light);
+        }
+        .chat-input input[type="text"] {
+            flex: 1;
+            height: 48px;
+            padding: 0 20px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            border-radius: 25px;
+            border: 1px solid var(--border-color);
+            background-color: var(--white-bg);
+            color: var(--text-dark);
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .chat-input input[type="text"]:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0, 119, 190, 0.2);
+        }
+
+        /* === MODAL UPLOAD FILE === */
+        #file-upload-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        #file-upload-modal.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: var(--white-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-strong);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        #file-upload-modal.visible .modal-content {
+            transform: scale(1);
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+        }
+        .modal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .modal-btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .modal-btn.pdf { background-color: var(--danger-color); color: white; }
+        .modal-btn.image { background-color: var(--success-color); color: white; }
+        .modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        #modal-close-btn {
+            margin-top: 25px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* === STATUS UPLOAD === */
+        #upload-status-bar {
+            padding: 8px 20px;
+            background-color: var(--secondary-blue);
+            color: var(--text-light);
+            font-size: 13px;
+            text-align: center;
+            display: none; /* Tampil saat ada file aktif */
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+
+<body>
+    
+    <div id="home-screen">
+        <img src="{{ url_for('static', filename='images/robot.jpg') }}" alt="Robot Maskot" class="home-robot">
+        <h1>Selamat Datang</h1>
+        <p>Tanyakan apa saja seputar informasi meteorologi maritim kepada Chatbot BMKG.</p>
+        <button id="start-chat-btn" class="start-chat-btn">Mulai Chat</button>
+    </div>
+
+    <div id="chatbot-screen" class="hidden">
+        <div class="chat-container">
+            <div class="chat-header">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9.5 13.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm5 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg>
+                Chatbot BMKG
+            </div>
+
+            <div class="select-wrapper">
+                <select id="source-select">
+                    <option value="general">Mode: Pengetahuan Umum</option>
+                    <option value="pdf" disabled>Mode: Chat PDF (aktif setelah unggah)</option>
+                </select>
+            </div>
+            
+            <div id="upload-status-bar"></div>
+
+            <div class="chat-messages" id="chatMessages">
+                <!-- Pesan akan ditambahkan oleh JavaScript -->
+            </div>
+
+            <div class="chat-input">
+                <button id="attach-file-btn" class="chat-input-btn" aria-label="Tambah Lampiran">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c-1.93-1.35-4.43-1.35-7 0v10.5c0 2.76 2.24 5 5 5s5-2.24 5-5V6h-1.5z"></path></svg>
+                </button>
+                
+                <input type="text" id="userInput" placeholder="Tulis pertanyaan Anda..." onkeydown="if(event.key==='Enter') sendChat()" />
+                
+                <button onclick="sendChat()" class="chat-input-btn send-btn" aria-label="Kirim Pesan">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="file-upload-modal" class="">
+        <div class="modal-content">
+            <h3>Pilih Jenis File untuk Diunggah</h3>
+            <div class="modal-options">
+                 <button id="upload-pdf-btn" class="modal-btn pdf">Unggah Dokumen PDF</button>
+                 <button id="upload-csv-btn" class="modal-btn csv">Unggah Dokumen CSV</button>
+                 <button id="upload-image-btn" class="modal-btn image" disabled>Unggah Gambar (Segera Hadir)</button>
+            </div>
+            <button id="modal-close-btn">Batal</button>
+        </div>
+    </div>
+    
+    <input type="file" id="pdf-file-input" accept=".pdf" class="hidden">
+
+<script>
+    let activeChatMode = 'general';      // mode chat: 'general' atau 'pdf'
+    let pdfChatHistory = [];             // history chat khusus PDF
+    let activeFileName = '';             // nama file PDF aktif
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const homeScreen = document.getElementById('home-screen');
+        const chatbotScreen = document.getElementById('chatbot-screen');
+        const startChatBtn = document.getElementById('start-chat-btn');
+        const sourceSelect = document.getElementById('source-select');
+        const attachBtn = document.getElementById('attach-file-btn');
+        const modal = document.getElementById('file-upload-modal');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const uploadPdfBtn = document.getElementById('upload-pdf-btn');
+        const pdfFileInput = document.getElementById('pdf-file-input');
+        const uploadStatusBar = document.getElementById('upload-status-bar');
+
+        // Tombol mulai chat: sembunyikan home, tampilkan chat
+        startChatBtn.addEventListener('click', () => {
+            homeScreen.classList.add('hidden');
+            chatbotScreen.classList.remove('hidden');
+
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages.children.length === 0) {
+                appendMessage("Halo! Saya adalah Chatbot BMKG. Silakan ajukan pertanyaan atau lampirkan dokumen untuk memulai.", 'bot');
+            }
+        });
+
+        // Event buka modal upload file PDF
+        attachBtn.addEventListener('click', () => modal.classList.add('visible'));
+        modalCloseBtn.addEventListener('click', () => modal.classList.remove('visible'));
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('visible');
+        });
+        uploadPdfBtn.addEventListener('click', () => pdfFileInput.click());
+
+        // Event ketika file PDF dipilih
+        pdfFileInput.addEventListener('change', async (e) => {
+            modal.classList.remove('visible');
+            const file = e.target.files[0];
+            if (!file) return;
+
+            activeFileName = file.name;
+            // Clear chat untuk chat PDF baru, tapi jangan reset history langsung
+            document.getElementById('chatMessages').innerHTML = '';
+
+            uploadStatusBar.textContent = `Memproses ${activeFileName}...`;
+            uploadStatusBar.style.display = 'block';
+            uploadStatusBar.style.backgroundColor = 'var(--secondary-blue)';
+            appendMessage("🤖 Memproses dokumen Anda...", 'bot', true);
+
+            const formData = new FormData();
+            formData.append('pdf_file', file);
+
+            try {
+                const response = await fetch('/upload_pdf', { method: 'POST', body: formData });
+                const data = await response.json();
+
+                removeTypingMessage();
+
+                if (data.error) throw new Error(data.error);
+
+                pdfChatHistory = data.initial_history || [];
+                console.log('Initial PDF chat history:', pdfChatHistory);
+
+                // Tampilkan respons awal dari PDF jika ada
+                const firstReply = pdfChatHistory.find(msg => msg.role === 'assistant');
+                if (firstReply) {
+                    appendMessage(formatSummary(firstReply.content), 'bot');
+                } else {
+                    appendMessage("Dokumen berhasil diproses. Silakan ajukan pertanyaan.", 'bot');
+                }
+
+                uploadStatusBar.textContent = `Mode Chat PDF Aktif: ${activeFileName}`;
+                sourceSelect.querySelector('option[value="pdf"]').disabled = false;
+                sourceSelect.value = 'pdf';
+                activeChatMode = 'pdf';
+
+            } catch (error) {
+                removeTypingMessage();
+                uploadStatusBar.textContent = `Gagal mengunggah file.`;
+                uploadStatusBar.style.backgroundColor = 'var(--danger-color)';
+                appendMessage(`Gagal memproses PDF: ${error.message}`, 'bot');
+
+                // Kembali ke mode umum setelah 3 detik
+                setTimeout(resetChatToGeneralMode, 3000);
+            }
+
+            pdfFileInput.value = ''; // Reset input file supaya bisa upload ulang file sama
+        });
+
+        // Event ketika user ganti pilihan sumber jawaban
+        sourceSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'general') {
+                resetChatToGeneralMode();
+            } else if (e.target.value === 'pdf') {
+                if (activeFileName) {
+                    activeChatMode = 'pdf';
+                    document.getElementById('chatMessages').innerHTML = '';
+                    appendMessage(`Mode kembali ke chat PDF tentang <strong>${activeFileName}</strong>.`, 'bot');
+                } else {
+                    // Jika belum ada file aktif, reset ke general mode
+                    resetChatToGeneralMode();
+                }
+            }
+        });
+    });
+
+    // Reset ke mode chat umum
+    function resetChatToGeneralMode() {
+        const sourceSelect = document.getElementById('source-select');
+        const uploadStatusBar = document.getElementById('upload-status-bar');
+
+        activeChatMode = 'general';
+        activeFileName = '';
+        pdfChatHistory = [];
+
+        sourceSelect.value = 'general';
+        sourceSelect.querySelector('option[value="pdf"]').disabled = true;
+        uploadStatusBar.style.display = 'none';
+        uploadStatusBar.style.backgroundColor = 'var(--secondary-blue)';
+
+        document.getElementById('chatMessages').innerHTML = '<div class="message bot-message">Mode diganti ke Pengetahuan Umum.</div>';
+    }
+
+    // Kirim pesan chat
+    async function sendChat() {
+        const userInputField = document.getElementById('userInput');
+        const input = userInputField.value.trim();
+        if (!input) return;
+
+        appendMessage(input, 'user');
+        userInputField.value = '';
+        appendMessage('', 'bot', true); // Tampilkan indikator mengetik
+
+        let endpoint = '';
+        let payload = {};
+
+        if (activeChatMode === 'pdf') {
+            if (!activeFileName) {
+                removeTypingMessage();
+                appendMessage("Silakan unggah file PDF terlebih dahulu.", 'bot');
+                return;
+            }
+
+            // Pastikan riwayat chat PDF tidak kosong
+            if (!pdfChatHistory || pdfChatHistory.length === 0) {
+                removeTypingMessage();
+                appendMessage("Riwayat chat kosong. Silakan unggah ulang file PDF.", 'bot');
+                return;
+            }
+
+            endpoint = '/chat_pdf';
+            pdfChatHistory.push({ role: 'user', content: input });
+            payload = { history: pdfChatHistory, input: input };
+        } else {
+            endpoint = '/chat';
+            payload = { input: input, source: 'global' };
+        }
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            removeTypingMessage();
+            const data = await response.json();
+
+            if (data.error) throw new Error(data.error);
+
+            let botResponse = data.response || "Maaf, terjadi kesalahan pada server.";
+
+            // Format ringkasan khusus mode pdf supaya lebih rapi
+            if (activeChatMode === 'pdf') {
+                pdfChatHistory.push({ role: 'assistant', content: botResponse });
+                botResponse = formatSummary(botResponse);
+            }
+
+            appendMessage(botResponse, 'bot');
+
+        } catch (err) {
+            removeTypingMessage();
+            appendMessage(`Terjadi kesalahan jaringan: ${err.message}`, 'bot');
+        }
+    }
+
+    // Fungsi tambah pesan ke chat window
+    function appendMessage(text, sender, isTyping = false) {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+
+        if (isTyping) {
+            const oldIndicator = document.getElementById('typingIndicator');
+            if (oldIndicator) oldIndicator.remove();
+
+            messageDiv.classList.add('message', 'bot-message');
+            messageDiv.id = 'typingIndicator';
+            messageDiv.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+        } else {
+            messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+            messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+        }
+
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Hapus indikator mengetik
+    function removeTypingMessage() {
+        const typingIndicator = document.getElementById('typingIndicator');
+        if (typingIndicator) typingIndicator.remove();
+    }
+
+    // Fungsi untuk format ringkasan hasil chat PDF
+    function formatSummary(rawText) {
+        let formatted = "📄 <strong>Ringkasan Dokumen '" + (activeFileName || "PDF") + "':</strong><br><br>";
+
+        // Pisah paragraf bullet yang biasanya dimulai dengan *
+        let points = rawText.split(/\n\s*\*\s*/);  // split by newline + * + optional spaces
+
+        // Lewati elemen pertama jika kosong (karena split awal)
+        if(points.length > 0 && points[0].trim() === '') points.shift();
+
+        points.forEach(point => {
+            let cleanPoint = point.trim();
+            if (cleanPoint) {
+                // Tambah bullet dan ubah newline dalam point jadi <br>
+                cleanPoint = cleanPoint.replace(/\n/g, '<br>');
+                formatted += "• " + cleanPoint + "<br>";
+            }
+        });
+
+        // Footer informasi
+        formatted += "<br>---<br>Sumber: " + (activeFileName || "PDF") + "<br>Diproses: " + new Date().toLocaleString();
+
+        return formatted;
+    }
+</script>
+
+
+</body>
+
+</html>
