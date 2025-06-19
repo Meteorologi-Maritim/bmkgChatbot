@@ -59,6 +59,9 @@ def get_pdf_plugins():
 
 # === Kirim permintaan ke OpenRouter ===
 def chat_with_openrouter(chat_history, api_key, model="google/gemma-3-27b-it"):
+    print(f"🔁 Kirim permintaan ke model: {model}")
+    print(f"🔑 API Key (3 digit terakhir): ...{api_key[-3:]}" if api_key else "❌ API Key kosong!")
+
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -78,7 +81,6 @@ def chat_with_openrouter(chat_history, api_key, model="google/gemma-3-27b-it"):
     else:
         print("❌ Error:", response.status_code, response.text)
         return "[Gagal mendapatkan respons dari model]"
-
 
 # === Fungsi CLI: Jalankan interaktif PDF Chat di Terminal ===
 def run_pdf_chat():
