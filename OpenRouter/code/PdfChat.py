@@ -58,7 +58,7 @@ def get_pdf_plugins():
 
 
 # === Kirim permintaan ke OpenRouter ===
-def chat_with_openrouter(chat_history, api_key, model="google/gemma-3-27b-it"):
+def chat_with_openrouter(chat_history, api_key, model="google/gemini-2.0-flash-lite-001"):
     print(f"🔁 Kirim permintaan ke model: {model}")
     print(f"🔑 API Key (3 digit terakhir): ...{api_key[-3:]}" if api_key else "❌ API Key kosong!")
 
@@ -89,20 +89,51 @@ def run_pdf_chat():
         print("❌ API key tidak ditemukan. Pastikan .env berisi OPENROUTER_API_KEY.")
         return
 
-    # === Minta path file PDF dari user ===
-    pdf_path = input("Masukkan path file PDF kamu: ").strip()
+    chat_history = []
+    print("📥 Masukkan path file PDF satu per satu. Ketik 'selesai' jika sudah.")
 
-    if not os.path.exists(pdf_path):
-        print("❌ File tidak ditemukan. Periksa kembali path-nya.")
+    while True:
+        pdf_path = input("Masukkan path file PDF: ").strip()
+        if pdf_path.lower() == "selesai":
+            break
+
+        if not os.path.exists(pdf_path):
+            print("❌ File tidak ditemukan. Coba lagi.")
+            continue
+
+        # Tambahkan file ke chat_history
+        filename = Path(pdf_path).name
+        data_url = build_pdf_data_url(pdf_path)
+
+        file_message = {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Tolong pahami dokumen ini."},
+                {
+                    "type": "file",
+                    "file": {
+                        "filename": filename,
+                        "file_data": data_url
+                    }
+                }
+            ]
+        }
+
+        chat_history.append(file_message)
+
+    if not chat_history:
+        print("⚠️ Tidak ada file yang diberikan.")
         return
 
-    print("\n🤖 Chatbot dokumen aktif. Ketik 'exit', 'quit', atau 'q' untuk keluar.")
-    chat_history = build_initial_chat(pdf_path)
-    print("🤖 Assistant sedang memproses dokumen awal...\n")
+    # Tambahkan sistem prompt
+    chat_history.insert(0, {"role": "system", "content": "You are a helpful assistant."})
 
+    print("\n🤖 Assistant sedang memproses semua dokumen...\n")
     assistant_reply = chat_with_openrouter(chat_history, api_key)
     print("Assistant:", assistant_reply)
     chat_history.append({"role": "assistant", "content": assistant_reply})
+
+    print("💬 Chatbot siap. Ketik pertanyaan Anda di bawah (atau ketik 'exit' untuk keluar).")
 
     while True:
         user_input = input("\nYou: ")
@@ -114,7 +145,6 @@ def run_pdf_chat():
         assistant_reply = chat_with_openrouter(chat_history, api_key)
         print("Assistant:", assistant_reply)
         chat_history.append({"role": "assistant", "content": assistant_reply})
-
 
 # === Fungsi untuk Flask: Proses PDF dari file unggahan ===
 def process_uploaded_pdf(file_storage):
@@ -147,7 +177,34 @@ def continue_pdf_chat(chat_history, user_prompt):
     assistant_reply = chat_with_openrouter(chat_history, api_key)
     return assistant_reply
 
+# === Fungsi tambahan: proses banyak PDF ===
+def process_multiple_pdfs(file_storages):
+    chat_history = []
 
-# === Entry point ===
-if __name__ == "__main__":
-    run_pdf_chat()
+    for file_storage in file_storages:
+        file_storage.seek(0)  # ⬅️ Pastikan file pointer di awal
+        file_bytes = file_storage.read()
+
+        base64_pdf = base64.b64encode(file_bytes).decode("utf-8")
+        filename = secure_filename(file_storage.filename)
+
+        chat_history.append({
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Tolong pahami dokumen ini."},
+                {
+                    "type": "file",
+                    "file": {
+                        "filename": filename,
+                        "file_data": f"data:application/pdf;base64,{base64_pdf}"
+                    }
+                }
+            ]
+        })
+
+    return chat_history
+
+
+# # === Entry point ===
+# if __name__ == "__main__":
+#     run_pdf_chat()

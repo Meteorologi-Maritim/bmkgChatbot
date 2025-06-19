@@ -5,16 +5,16 @@ from flask_session import Session
 
 # === Impor fungsi eksternal ===
 from GlobalChat import global_run 
-from PdfChat import process_uploaded_pdf, continue_pdf_chat
-from CsvChat import csv_chat 
+from PdfChat import process_multiple_pdfs, continue_pdf_chat
+from CsvChat import csv_chat  # Masih bisa abaikan jika belum aktif
 
 # === Inisialisasi Flask ===
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static", template_folder="templates")
 
-# Gunakan secret key yang aman dan bisa di-set lewat environment variable
+# Secret key untuk session
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your-default-secret-key')
 
-# === Konfigurasi Flask-Session (server-side session) ===
+# === Konfigurasi Flask-Session ===
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_FILE_DIR'] = './.flask_session'
 app.config['SESSION_PERMANENT'] = False
@@ -30,10 +30,10 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # === Halaman utama ===
 @app.route("/", methods=["GET"])
 def index():
-    # Jangan hapus session di sini agar riwayat tetap tersimpan selama sesi berjalan
     return render_template("index.html")
 
-# === Endpoint Chat Utama ===
+
+# === Endpoint Chat Umum (Global) ===
 @app.route("/chat", methods=["POST"])
 def chat():
     try:
@@ -52,12 +52,11 @@ def chat():
         elif source == "csv":
             file_path = session.get("csv_file_path")
             if not file_path:
-                return jsonify({"error": "Path file CSV tidak ada di sesi. Silakan unggah file terlebih dahulu."}), 400
-            
+                return jsonify({"error": "Path file CSV tidak ditemukan di session."}), 400
             response_text = csv_chat(user_input, file_path)
-        
+
         else:
-            response_text = f"Mode untuk sumber '{source}' saat ini belum tersedia."
+            response_text = f"Mode sumber '{source}' belum tersedia."
 
         return jsonify({"response": response_text})
 
@@ -65,35 +64,38 @@ def chat():
         print(f"Error di endpoint /chat: {e}")
         return jsonify({"error": "Terjadi kesalahan di server saat memproses chat."}), 500
 
-# === Endpoint Unggah PDF dan Mulai Chat ===
+
+# === Endpoint Upload Multiple PDF ===
 @app.route("/upload_pdf", methods=["POST"])
 def upload_pdf_route():
     if 'pdf_file' not in request.files:
         return jsonify({"error": "Tidak ada bagian file dalam permintaan"}), 400
-    
-    file = request.files['pdf_file']
-    
-    if file.filename == '':
-        return jsonify({"error": "Tidak ada file yang dipilih"}), 400
-        
-    if file and file.filename.endswith('.pdf'):
-        try:
-            initial_history = process_uploaded_pdf(file)
-            session['pdf_chat_history'] = initial_history
-            print("Session pdf_chat_history disimpan:", session.get('pdf_chat_history'))
-            return jsonify({"initial_history": initial_history})
-        except Exception as e:
-            print(f"Error saat memproses PDF di /upload_pdf: {e}")
-            return jsonify({"error": "Gagal memproses file PDF di server."}), 500
-    
-    return jsonify({"error": "Format file tidak valid. Harap unggah file .pdf"}), 400
 
-# === Endpoint Unggah CSV Baru ===
+    files = request.files.getlist("pdf_file")
+
+    if not files or all(f.filename == '' for f in files):
+        return jsonify({"error": "Tidak ada file yang dipilih"}), 400
+
+    try:
+        combined_history = process_multiple_pdfs(files)
+        combined_history.insert(0, {"role": "system", "content": "You are a helpful assistant."})
+
+        session['pdf_chat_history'] = combined_history
+        print("Session pdf_chat_history disimpan:", session.get('pdf_chat_history'))
+
+        return jsonify({"message": f"{len(files)} file berhasil diproses.", "initial_history": combined_history})
+
+    except Exception as e:
+        print(f"Error saat memproses PDF di /upload_pdf: {e}")
+        return jsonify({"error": "Gagal memproses file PDF di server."}), 500
+
+
+# === Endpoint Upload CSV ===
 @app.route("/upload_csv", methods=["POST"])
 def upload_csv_route():
     if 'csv_file' not in request.files:
         return jsonify({"error": "Tidak ada bagian file dalam permintaan"}), 400
-    
+
     file = request.files['csv_file']
     
     if file.filename == '':
@@ -132,7 +134,6 @@ def chat_pdf_route():
         
         assistant_reply = continue_pdf_chat(chat_history, user_prompt)
 
-        # Update riwayat chat di session dengan user prompt dan balasan assistant
         chat_history.append({"role": "user", "content": user_prompt})
         chat_history.append({"role": "assistant", "content": assistant_reply})
         session['pdf_chat_history'] = chat_history
@@ -144,5 +145,6 @@ def chat_pdf_route():
         return jsonify({"error": "Gagal mendapatkan balasan dari AI."}), 500
 
 
+# === Jalankan Aplikasi ===
 if __name__ == "__main__":
-    app.run(debug=False, port=5000)  # debug=False agar session stabil
+    app.run(debug=False, port=5000)
