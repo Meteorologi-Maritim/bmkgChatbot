@@ -75,6 +75,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // Tambahkan ENTER submit langsung
+    const inputField = document.getElementById('userInput');
+    inputField.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendChat();
+        }
+    });
 });
 
 function resetChatToGeneralMode() {
@@ -117,6 +126,8 @@ async function sendChat() {
         payload = { input: input, source: 'global' };
     }
 
+    appendMessage('Memproses...', 'bot');
+
     try {
         const res = await fetch(endpoint, {
             method: 'POST',
@@ -131,19 +142,28 @@ async function sendChat() {
             reply = formatSummary(reply);
         }
 
-        appendMessage(reply, 'bot');
+        updateLastBotBubble(reply);
     } catch (err) {
-        appendMessage(`❌ Gagal memproses permintaan: ${err.message}`, 'bot');
+        updateLastBotBubble(`❌ Gagal memproses permintaan: ${err.message}`);
     }
 }
 
 function appendMessage(text, sender) {
     const container = document.getElementById('chatMessages');
     const div = document.createElement('div');
-    div.className = `message ${sender === 'user' ? 'user-message' : 'bot-message'}`;
+    div.className = `bubble ${sender === 'user' ? 'user-bubble' : 'bot-bubble'}`;
     div.innerHTML = text.replace(/\n/g, '<br>');
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
+}
+
+function updateLastBotBubble(newText) {
+    const container = document.getElementById('chatMessages');
+    const bubbles = container.getElementsByClassName('bot-bubble');
+    const lastBubble = bubbles[bubbles.length - 1];
+    if (lastBubble) {
+        lastBubble.innerHTML = newText.replace(/\n/g, '<br>');
+    }
 }
 
 function formatSummary(text) {

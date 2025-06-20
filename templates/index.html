@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>BMKG Chatbot</title>
     <style>
-        /* Reset dan basic style */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f9fc;
@@ -18,10 +17,11 @@
         }
 
         .container {
-            max-width: 600px;
-            width: 100%;
+            width: 90%;
+            max-width: 1600px;
+            min-width: 600px;
             background: white;
-            padding: 25px 30px;
+            padding: 25px 40px;
             box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
             border-radius: 8px;
         }
@@ -73,31 +73,39 @@
             background-color: #025aa5;
         }
 
-        h3 {
-            color: #555;
-            margin-top: 30px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 5px;
-        }
-
-        #response {
-            min-height: 60px;
-            background: #e9f0fb;
-            border-radius: 5px;
-            padding: 15px;
-            white-space: pre-wrap;
-            font-size: 16px;
-            color: #222;
-        }
-
-        #sources {
+        #chatContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            min-height: 300px;
             background: #f0f4f9;
-            border-radius: 5px;
-            padding: 15px;
-            font-family: monospace;
-            color: #555;
-            min-height: 40px;
-            white-space: pre-wrap;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-y: auto;
+            max-height: 70vh;
+        }
+
+        .bubble {
+            padding: 15px 20px;
+            border-radius: 16px;
+            font-size: 17px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            max-width: 85%;
+        }
+
+        .user-bubble {
+            background-color: #0088ff;
+            align-self: flex-end;
+            text-align: right;
+        }
+
+        .bot-bubble {
+            background-color: #0afea9;
+            align-self: flex-start;
+            text-align: left;
+            border: 1px solid #ddd;
         }
     </style>
 </head>
@@ -120,21 +128,20 @@
 
         <button onclick="sendChat()">Kirim</button>
 
-        <h3>Jawaban:</h3>
-        <div id="response">...</div>
-
-        <h3>Sumber (jika ada):</h3>
-        <pre id="sources">-</pre>
+        <div id="chatContainer"></div>
     </div>
 
     <script>
         async function sendChat() {
-            const input = document.getElementById('userInput').value.trim();
+            const inputElement = document.getElementById('userInput');
+            const input = inputElement.value.trim();
             const source = document.getElementById('source').value;
-            if (!input) return alert('Masukkan pertanyaan!');
 
-            document.getElementById('response').innerText = 'Memproses...';
-            document.getElementById('sources').innerText = '-';
+            if (!input) return alert('Masukkan pertanyaan!');
+            addBubble(input, 'user');
+            inputElement.value = '';
+
+            addBubble('Memproses...', 'bot');
 
             try {
                 const response = await fetch('/chat', {
@@ -144,31 +151,40 @@
                 });
 
                 const data = await response.json();
-
-                if (data.error) {
-                    alert(data.error);
-                    document.getElementById('response').innerText = '';
-                    document.getElementById('sources').innerText = '-';
-                    return;
-                }
-
-                document.getElementById('response').innerText = data.response;
-
-                if (data.sources && data.sources.length > 0) {
-                    let srcText = '';
-                    data.sources.forEach((s, i) => {
-                        srcText += `${i + 1}. ${s.source}, halaman ${s.page}\n`;
-                    });
-                    document.getElementById('sources').innerText = srcText;
-                } else {
-                    document.getElementById('sources').innerText = 'Tidak ada sumber tambahan.';
-                }
+                const botReply = data.response || '❌ Terjadi kesalahan.';
+                
+                updateLastBotBubble(botReply);
             } catch (err) {
-                alert('Terjadi kesalahan koneksi atau server.');
-                document.getElementById('response').innerText = '';
-                document.getElementById('sources').innerText = '-';
+                updateLastBotBubble('❌ Terjadi kesalahan koneksi.');
             }
         }
+
+        function addBubble(text, sender) {
+            const chatContainer = document.getElementById('chatContainer');
+            const bubble = document.createElement('div');
+            bubble.classList.add('bubble');
+            bubble.classList.add(sender === 'user' ? 'user-bubble' : 'bot-bubble');
+            bubble.innerText = text;
+            chatContainer.appendChild(bubble);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function updateLastBotBubble(newText) {
+            const chatContainer = document.getElementById('chatContainer');
+            const bubbles = chatContainer.getElementsByClassName('bot-bubble');
+            const lastBotBubble = bubbles[bubbles.length - 1];
+            if (lastBotBubble) {
+                lastBotBubble.innerText = newText;
+            }
+        }
+
+        // Tambahkan enter listener
+        document.getElementById('userInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendChat();
+            }
+        });
     </script>
 </body>
 
