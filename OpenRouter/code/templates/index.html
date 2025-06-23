@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,11 +8,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     * {
       box-sizing: border-box;
       font-family: 'Poppins', sans-serif;
     }
+
     body {
       margin: 0;
       background-color: #dcecfb;
@@ -21,26 +25,32 @@
       height: 100vh;
       flex-direction: column;
     }
+
     .hidden {
       display: none;
     }
+
     #home-screen {
       text-align: center;
       animation: fadeIn 0.8s ease-in-out;
     }
+
     #home-screen img {
       width: 180px;
       border-radius: 50%;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
+
     #home-screen h1 {
       font-size: 2rem;
       color: #005a9e;
     }
+
     #home-screen p {
       font-size: 1rem;
       margin-bottom: 1.5rem;
     }
+
     #home-screen .btn {
       padding: 0.6rem 1.5rem;
       background-color: #005a9e;
@@ -50,9 +60,11 @@
       font-size: 1rem;
       cursor: pointer;
     }
+
     #home-screen .btn:hover {
       background-color: #00487c;
     }
+
     .chat-container {
       background-color: #fff;
       width: 400px;
@@ -63,6 +75,7 @@
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
       overflow: hidden;
     }
+
     .chat-header {
       background-color: #005a9e;
       color: #fff;
@@ -71,6 +84,7 @@
       font-weight: 600;
       font-size: 1.2rem;
     }
+
     .chat-messages {
       flex: 1;
       overflow-y: auto;
@@ -80,29 +94,7 @@
       gap: 1rem;
       background-color: #f4f9ff;
     }
-    .chat-input {
-      display: flex;
-      padding: 0.8rem;
-      border-top: 1px solid #ccc;
-      background: #fff;
-      gap: 0.5rem;
-    }
-    .chat-input input {
-      flex: 1;
-      border: none;
-      padding: 0.6rem 1rem;
-      border-radius: 20px;
-      background-color: #f1f1f1;
-      outline: none;
-    }
-    .chat-input button {
-      background-color: #005a9e;
-      color: white;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      border-radius: 20px;
-      cursor: pointer;
-    }
+
     .message {
       max-width: 70%;
       padding: 0.6rem 1rem;
@@ -110,16 +102,32 @@
       font-size: 0.9rem;
       position: relative;
       animation: fadeInUp 0.3s ease-in-out;
+      word-break: break-word;
+      margin-bottom: 0.5rem;
+      clear: both;
     }
+
     .user-message {
       background-color: #dcf8c6;
       align-self: flex-end;
+      border-bottom-right-radius: 5px;
+      border-bottom-left-radius: 20px;
+      border-top-right-radius: 20px;
+      border-top-left-radius: 20px;
+      text-align: right;
     }
+
     .bot-message {
       background-color: #ffffff;
       align-self: flex-start;
       border: 1px solid #e0e0e0;
+      border-bottom-left-radius: 5px;
+      border-bottom-right-radius: 20px;
+      border-top-right-radius: 20px;
+      border-top-left-radius: 20px;
+      text-align: left;
     }
+
     #upload-status-bar {
       padding: 0.5rem;
       color: white;
@@ -128,19 +136,45 @@
       display: none;
       font-size: 0.85rem;
     }
+
     select {
       border-radius: 10px;
       padding: 0.4rem;
       margin: 0.5rem;
     }
+
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    .chat-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* jarak antar elemen */
+    margin: 10px 0;
+  }
+
+  .upload-modern-btn {
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .upload-modern-btn i {
+    margin-right: 4px;
+  }
+
   </style>
 </head>
 <body>
@@ -156,22 +190,29 @@
       <div class="chat-header">
         🤖 Chatbot BMKG
       </div>
+
       <div id="upload-status-bar"></div>
-      <div>
+      <div class="chat-toolbar">
         <select id="source-select">
           <option value="general">🌐 Mode: Pengetahuan Umum</option>
           <option value="pdf" disabled>📄 Mode: PDF</option>
         </select>
-        <button class="btn" id="attach-file-btn">📎 PDF</button>
+
+        <label for="pdf-file-input" class="upload-modern-btn">
+          <i class="fa fa-paperclip"></i> Upload PDF
+        </label>
         <input type="file" id="pdf-file-input" accept="application/pdf" multiple hidden>
       </div>
+
       <div class="chat-messages" id="chatMessages"></div>
+
       <div class="chat-input">
         <input type="text" id="userInput" placeholder="Tulis pesan...">
-        <button onclick="sendChat()">Kirim</button>
+        <button class="send-btn" onclick="sendChat()">Kirim</button>
       </div>
     </div>
   </div>
+
 
   <script src="static/js/mywebscript.js" defer></script>
 </body>

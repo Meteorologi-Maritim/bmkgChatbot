@@ -1,0 +1,343 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* === Variabel Warna === */
+:root {
+    --primary-blue: #0077BE;
+    --secondary-blue: #005A9E;
+    --light-blue-bg: #f0f8ff;
+    --white-bg: #FFFFFF;
+    --light-gray-bg: #f8f9fa;
+    --bot-msg-bg: #e9ecef;
+    --text-dark: #333333;
+    --text-light: #FFFFFF;
+    --text-secondary: #5c677d;
+    --border-color: #dee2e6;
+    --danger-color: #dc3545;
+    --success-color: #28a745;
+    --accent-gradient: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+    --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.07);
+    --shadow-strong: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* === Tampilan Umum === */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-image: linear-gradient(135deg, var(--light-blue-bg), #d6eaff);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+    color: var(--text-dark);
+}
+
+.hidden { display: none !important; }
+
+/* === Halaman Awal === */
+#home-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    max-width: 550px;
+    width: 100%;
+}
+.home-robot {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 30px;
+    object-fit: contain;
+    border-radius: 50%;
+    background: var(--white-bg);
+    padding: 10px;
+    box-shadow: var(--shadow-light);
+}
+#home-screen h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1a3a53;
+}
+#home-screen p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+    line-height: 1.6;
+    max-width: 80%;
+}
+.start-chat-btn {
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    padding: 18px 40px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 119, 190, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.start-chat-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 119, 190, 0.4);
+}
+
+/* === Layar Chatbot === */
+#chatbot-screen {
+    max-width: 600px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* === Kotak Chat === */
+.chat-container {
+    width: 100%;
+    height: 90vh;
+    background: var(--white-bg);
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-strong);
+    overflow: hidden;
+}
+
+/* === Header === */
+.chat-header {
+    background: var(--accent-gradient);
+    color: var(--text-light);
+    padding: 20px;
+    font-weight: 600;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    box-shadow: 0 4px 10px rgba(0, 119, 190, 0.3);
+}
+.chat-header .icon {
+    width: 28px;
+    height: 28px;
+}
+
+/* === Dropdown Mode === */
+.select-wrapper {
+    padding: 15px 20px;
+    background: var(--white-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+.select-wrapper select {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    font-family: 'Poppins', sans-serif;
+    background: var(--light-gray-bg);
+    color: var(--text-dark);
+    background-image: url("data:image/svg+xml,...");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 16px;
+}
+.select-wrapper select:focus {
+    border-color: var(--primary-blue);
+    outline: none;
+}
+
+/* === Area Pesan === */
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: var(--light-gray-bg);
+}
+.message {
+    max-width: 80%;
+    padding: 12px 18px;
+    margin-bottom: 12px;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.5;
+    clear: both;
+    animation: fadeIn 0.4s forwards;
+}
+@keyframes fadeIn {
+    to { opacity: 1; transform: translateY(0); }
+}
+.user-message {
+    background-color: #dcf8c6;
+    color: #222;
+    align-self: flex-end;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-top-left-radius: 20px;
+    text-align: right;
+}
+.bot-message {
+    background: var(--bot-msg-bg);
+    color: var(--text-dark);
+    float: left;
+}
+
+/* === Input Chat === */
+.chat-input {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    background: var(--white-bg);
+    border-top: 1px solid var(--border-color);
+    gap: 10px;
+    width: 100%;
+}
+.chat-input input[type="text"] {
+    flex: 1;
+    height: 48px;
+    padding: 0 20px;
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+    border-radius: 25px;
+    border: 1px solid var(--border-color);
+    background: var(--white-bg);
+    color: var(--text-dark);
+}
+.chat-input input[type="text"]:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(0, 119, 190, 0.2);
+    outline: none;
+}
+.chat-input-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+.send-btn {
+    height: 48px;
+    padding: 0 20px;
+    border-radius: 25px;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+.send-btn:hover {
+    background: var(--secondary-blue);
+}
+
+/* === Modal Upload === */
+#file-upload-modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+#file-upload-modal.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+.modal-content {
+    background: var(--white-bg);
+    padding: 30px;
+    border-radius: 16px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+}
+.modal-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.modal-btn {
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.modal-btn.pdf { background: var(--danger-color); color: white; }
+.modal-btn.image { background: var(--success-color); color: white; }
+#modal-close-btn {
+    margin-top: 20px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* === Upload Status === */
+#upload-status-bar {
+    padding: 8px 20px;
+    background: var(--secondary-blue);
+    color: white;
+    font-size: 13px;
+    text-align: center;
+    display: none;
+}
+.upload-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 15px;
+  background: #e6f2ff;
+  border-bottom: 1px solid #cce0f5;
+  border-radius: 0 0 12px 12px;
+}
+
+.select-mode {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  background: white;
+  color: #333;
+  font-family: 'Poppins', sans-serif;
+}
+
+.upload-modern-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  font-weight: 500;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+}
+
+.upload-modern-btn:hover {
+  background: linear-gradient(135deg, #0056b3, #003e80);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 86, 179, 0.4);
+}
+
+.upload-modern-btn i {
+  font-size: 1.1rem;
+}

@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatbotScreen = document.getElementById('chat-interface');
     const startChatBtn = document.getElementById('start-chat-btn');
     const sourceSelect = document.getElementById('source-select');
-    const attachBtn = document.getElementById('attach-file-btn');
     const pdfFileInput = document.getElementById('pdf-file-input');
     const uploadStatusBar = document.getElementById('upload-status-bar');
 
@@ -15,10 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
         homeScreen.classList.add('hidden');
         chatbotScreen.classList.remove('hidden');
         appendMessage("Halo! Saya chatbot BMKG. Ada yang bisa saya bantu? ☁️", 'bot');
-    });
-
-    attachBtn.addEventListener('click', () => {
-        pdfFileInput.click();
     });
 
     pdfFileInput.addEventListener('change', async (e) => {
@@ -76,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Tambahkan ENTER submit langsung
     const inputField = document.getElementById('userInput');
     inputField.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
@@ -151,7 +145,7 @@ async function sendChat() {
 function appendMessage(text, sender) {
     const container = document.getElementById('chatMessages');
     const div = document.createElement('div');
-    div.className = `bubble ${sender === 'user' ? 'user-bubble' : 'bot-bubble'}`;
+    div.className = `message ${sender === 'user' ? 'user-message' : 'bot-message'}`;
     div.innerHTML = text.replace(/\n/g, '<br>');
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
@@ -159,7 +153,7 @@ function appendMessage(text, sender) {
 
 function updateLastBotBubble(newText) {
     const container = document.getElementById('chatMessages');
-    const bubbles = container.getElementsByClassName('bot-bubble');
+    const bubbles = container.getElementsByClassName('bot-message');
     const lastBubble = bubbles[bubbles.length - 1];
     if (lastBubble) {
         lastBubble.innerHTML = newText.replace(/\n/g, '<br>');
