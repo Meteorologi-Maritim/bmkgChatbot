@@ -152,6 +152,29 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    .chat-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* jarak antar elemen */
+    margin: 10px 0;
+  }
+
+  .upload-modern-btn {
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .upload-modern-btn i {
+    margin-right: 4px;
+  }
+
   </style>
 </head>
 <body>
@@ -167,24 +190,31 @@
       <div class="chat-header">
         🤖 Chatbot BMKG
       </div>
+
       <div id="upload-status-bar"></div>
-      <div>
+
+      <!-- BARIS FLEX -->
+      <div class="chat-toolbar">
         <select id="source-select">
           <option value="general">🌐 Mode: Pengetahuan Umum</option>
           <option value="pdf" disabled>📄 Mode: PDF</option>
         </select>
+
         <label for="pdf-file-input" class="upload-modern-btn">
           <i class="fa fa-paperclip"></i> Upload PDF
         </label>
         <input type="file" id="pdf-file-input" accept="application/pdf" multiple hidden>
       </div>
+
       <div class="chat-messages" id="chatMessages"></div>
+
       <div class="chat-input">
         <input type="text" id="userInput" placeholder="Tulis pesan...">
         <button class="send-btn" onclick="sendChat()">Kirim</button>
       </div>
     </div>
   </div>
+
 
   <script src="static/js/mywebscript.js" defer></script>
 </body>
