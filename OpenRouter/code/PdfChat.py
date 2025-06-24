@@ -4,8 +4,8 @@ import base64
 from pathlib import Path
 from dotenv import load_dotenv
 from io import BytesIO
-from werkzeug.utils import secure_filename  # Penting untuk Flask
-os.makedirs("temp_uploads", exist_ok=True)  # Buat folder jika belum ada
+from werkzeug.utils import secure_filename
+os.makedirs("temp_uploads", exist_ok=True)
 
 # === Load API key dari environment ===
 def load_api_key():
@@ -55,7 +55,6 @@ def get_pdf_plugins():
             "pdf": {"engine": "pdf-text"}
         }
     ]
-
 
 # === Kirim permintaan ke OpenRouter ===
 def chat_with_openrouter(chat_history, api_key, model="google/gemini-2.0-flash-lite-001"):
@@ -168,7 +167,6 @@ def process_uploaded_pdf(file_storage):
         }
     ]
     return chat_history
-
 
 # === Fungsi untuk melanjutkan chat PDF dari frontend ===
 def continue_pdf_chat(chat_history, user_prompt):
