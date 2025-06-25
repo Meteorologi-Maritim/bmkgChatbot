@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         appendMessage("Halo! Saya chatbot BMKG. Ada yang bisa saya bantu? ☁️", 'bot');
     });
 
-    pdfFileInput.addEventListener('change', async (e) => {
+    pdfFileInput.addEventListener('change', async(e) => {
         const files = Array.from(e.target.files);
         if (!files.length) return;
 
@@ -58,9 +58,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     sourceSelect.addEventListener('change', (e) => {
-        if (e.target.value === 'general') {
+        const value = e.target.value;
+
+        if (value === 'general') {
             resetChatToGeneralMode();
-        } else if (e.target.value === 'pdf') {
+        } else if (value === 'pdf') {
             if (activeFileNames) {
                 activeChatMode = 'pdf';
                 document.getElementById('chatMessages').innerHTML = '';
@@ -68,11 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 resetChatToGeneralMode();
             }
+        } else if (value === 'web') {
+            resetChatToWebMode();
         }
     });
 
+
     const inputField = document.getElementById('userInput');
-    inputField.addEventListener('keypress', function (e) {
+    inputField.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
             sendChat();
@@ -95,6 +100,19 @@ function resetChatToGeneralMode() {
     appendMessage('🌐 Mode diganti ke Pengetahuan Umum.', 'bot');
 }
 
+function resetChatToWebMode() {
+    activeChatMode = 'web';
+    activeFileNames = '';
+    pdfChatHistory = [];
+
+    const uploadStatusBar = document.getElementById('upload-status-bar');
+    uploadStatusBar.style.display = 'none';
+
+    document.getElementById('chatMessages').innerHTML = '';
+    appendMessage('🌐 Mode diganti ke Pencarian Web. Gunakan kata kunci cuaca, maritim, atau BMKG.', 'bot');
+}
+
+
 async function sendChat() {
     const inputField = document.getElementById('userInput');
     const input = inputField.value.trim();
@@ -115,10 +133,14 @@ async function sendChat() {
         endpoint = '/chat_pdf';
         pdfChatHistory.push({ role: 'user', content: input });
         payload = { history: pdfChatHistory, input: input };
+    } else if (activeChatMode === 'web') {
+        endpoint = '/chat';
+        payload = { input: input, source: 'web' };
     } else {
         endpoint = '/chat';
         payload = { input: input, source: 'global' };
     }
+
 
     appendMessage('Memproses...', 'bot');
 

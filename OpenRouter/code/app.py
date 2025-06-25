@@ -1,12 +1,50 @@
 import os
+import requests
 from flask import Flask, request, render_template, jsonify, session
 from werkzeug.utils import secure_filename
 from flask_session import Session
+from dotenv import load_dotenv
 
 # === Impor fungsi eksternal ===
-from GlobalChat import global_run 
+from GlobalChat import global_run
 from PdfChat import process_multiple_pdfs, continue_pdf_chat
-from CsvChat import csv_chat  # Masih bisa abaikan jika belum aktif
+from CsvChat import csv_chat  # Optional
+
+# === Load API key dari environment ===
+def load_api_key():
+    load_dotenv(override=True)
+    return os.getenv("OPENROUTER_API_KEY")
+
+# === Fungsi chat Web Search OpenRouter ===
+def chat_with_websearch(chat_history, api_key, model="openrouter/auto"):
+    print(f"\n🔁 Kirim pertanyaan ke model: {model}")
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "model": model,
+        "plugins": [
+            {
+                "id": "web",
+                "max_results": 1,
+                "search_prompt": "Beberapa hasil pencarian yang relevan:"
+            }
+        ],
+        "messages": chat_history
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+
+    if response.status_code == 200:
+        result = response.json()
+        message = result['choices'][0]['message']
+        return message['content']
+    else:
+        print("❌ Error:", response.status_code, response.text)
+        return "[Gagal mendapatkan respons dari model Web Search]"
 
 # === Inisialisasi Flask ===
 app = Flask(__name__, static_folder="static", template_folder="templates")
@@ -26,14 +64,12 @@ UPLOAD_FOLDER = 'temp_uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-
 # === Halaman utama ===
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
 
-
-# === Endpoint Chat Umum (Global) ===
+# === Endpoint Chat Umum / CSV / Web ===
 @app.route("/chat", methods=["POST"])
 def chat():
     try:
@@ -48,12 +84,30 @@ def chat():
 
         if source == "global":
             response_text = global_run(user_input)
-        
+
         elif source == "csv":
             file_path = session.get("csv_file_path")
             if not file_path:
                 return jsonify({"error": "Path file CSV tidak ditemukan di session."}), 400
             response_text = csv_chat(user_input, file_path)
+
+        elif source == "web":
+            api_key = load_api_key()
+            if not api_key:
+                return jsonify({"error": "API key untuk OpenRouter tidak ditemukan."}), 500
+
+            chat_history = [
+                {
+                    "role": "system",
+                    "content": "Anda adalah asisten BMKG yang hanya menjawab berdasarkan informasi dari https://maritim.bmkg.go.id/. Sertakan URL sumber jika ada."
+                },
+                {
+                    "role": "user",
+                    "content": user_input
+                }
+            ]
+
+            response_text = chat_with_websearch(chat_history, api_key)
 
         else:
             response_text = f"Mode sumber '{source}' belum tersedia."
@@ -63,7 +117,6 @@ def chat():
     except Exception as e:
         print(f"Error di endpoint /chat: {e}")
         return jsonify({"error": "Terjadi kesalahan di server saat memproses chat."}), 500
-
 
 # === Endpoint Upload Multiple PDF ===
 @app.route("/upload_pdf", methods=["POST"])
@@ -89,7 +142,6 @@ def upload_pdf_route():
         print(f"Error saat memproses PDF di /upload_pdf: {e}")
         return jsonify({"error": "Gagal memproses file PDF di server."}), 500
 
-
 # === Endpoint Upload CSV ===
 @app.route("/upload_csv", methods=["POST"])
 def upload_csv_route():
@@ -97,10 +149,10 @@ def upload_csv_route():
         return jsonify({"error": "Tidak ada bagian file dalam permintaan"}), 400
 
     file = request.files['csv_file']
-    
+
     if file.filename == '':
         return jsonify({"error": "Tidak ada file yang dipilih"}), 400
-        
+
     if file and file.filename.endswith('.csv'):
         try:
             filename = secure_filename(file.filename)
@@ -115,9 +167,8 @@ def upload_csv_route():
         except Exception as e:
             print(f"Error saat menyimpan CSV di /upload_csv: {e}")
             return jsonify({"error": "Gagal menyimpan file CSV di server."}), 500
-    
-    return jsonify({"error": "Format file tidak valid. Harap unggah file .csv"}), 400
 
+    return jsonify({"error": "Format file tidak valid. Harap unggah file .csv"}), 400
 
 # === Endpoint Chat Lanjutan PDF ===
 @app.route("/chat_pdf", methods=["POST"])
@@ -126,12 +177,12 @@ def chat_pdf_route():
         chat_history = session.get('pdf_chat_history')
         data = request.get_json()
         user_prompt = data.get('input')
-        
+
         if not chat_history or not user_prompt:
             return jsonify({"error": "Riwayat chat atau input tidak boleh kosong."}), 400
-        
+
         print("Session pdf_chat_history saat chat:", chat_history)
-        
+
         assistant_reply = continue_pdf_chat(chat_history, user_prompt)
 
         chat_history.append({"role": "user", "content": user_prompt})
@@ -143,7 +194,6 @@ def chat_pdf_route():
     except Exception as e:
         print(f"Error di endpoint /chat_pdf: {e}")
         return jsonify({"error": "Gagal mendapatkan balasan dari AI."}), 500
-
 
 # === Jalankan Aplikasi ===
 if __name__ == "__main__":
