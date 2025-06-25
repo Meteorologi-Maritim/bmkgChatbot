@@ -20,10 +20,10 @@ def chat_with_websearch(chat_history, api_key, model="openrouter/auto"):
         "model": model,
         "plugins": [
             { 
-             "id": "web",
-             "max_results": 1,
-             "search_prompt": "Beberapa hasil pencarian yang relevan:"
-             }
+                "id": "web",
+                "max_results": 1,
+                "search_prompt": "Beberapa hasil pencarian yang relevan:"
+                }
         ],
         "messages": chat_history
     }

@@ -8,43 +8,13 @@ from dotenv import load_dotenv
 # === Impor fungsi eksternal ===
 from GlobalChat import global_run
 from PdfChat import process_multiple_pdfs, continue_pdf_chat
+from webSearch import chat_with_websearch
 from CsvChat import csv_chat  # Optional
 
 # === Load API key dari environment ===
 def load_api_key():
     load_dotenv(override=True)
     return os.getenv("OPENROUTER_API_KEY")
-
-# === Fungsi chat Web Search OpenRouter ===
-def chat_with_websearch(chat_history, api_key, model="openrouter/auto"):
-    print(f"\n🔁 Kirim pertanyaan ke model: {model}")
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "model": model,
-        "plugins": [
-            {
-                "id": "web",
-                "max_results": 1,
-                "search_prompt": "Beberapa hasil pencarian yang relevan:"
-            }
-        ],
-        "messages": chat_history
-    }
-
-    response = requests.post(url, headers=headers, json=payload)
-
-    if response.status_code == 200:
-        result = response.json()
-        message = result['choices'][0]['message']
-        return message['content']
-    else:
-        print("❌ Error:", response.status_code, response.text)
-        return "[Gagal mendapatkan respons dari model Web Search]"
 
 # === Inisialisasi Flask ===
 app = Flask(__name__, static_folder="static", template_folder="templates")
